@@ -26,19 +26,26 @@ server.post("/actions", async (req, res) => {
 		const newAction = await db("actions").insert(action);
 		res.status(201).json(newAction);
 	} catch (err) {
-        res.status(500).json({ err });
+		res.status(500).json({ err });
 	}
 });
 
-server.get('/projects/:id', async (req, res) => {
+server.get("/projects/:id", async (req, res) => {
     const id = req.params.id;
-    try {
-        // knex.select('*').from('users').leftJoin('accounts', 'users.id', 'accounts.user_id')
-        const projWithActions = await db.select("*").from("projects").leftJoin("actions", "projects.id","actions.project_id").where("projects.id", "=", id).first();
-        res.status(201).json(projWithActions);
-    } catch (err) {
-        res.status(500).json({ err });
-    }
-})
+	try {
+        const project = await db
+            .select("*")
+            .from("projects")
+            .where("projects.id", "=", id)
+            .first() 
+        const actions = await db
+			.select("id", "description", "notes", "completed")
+			.from("actions")
+            .where("actions.project_id", "=", id)
+		res.status(201).json({project : project, actions : actions});
+	} catch (err) {
+		res.status(500).json({ err });
+	}
+});
 
 server.listen(5001, () => console.log("Server running on 5001"));
